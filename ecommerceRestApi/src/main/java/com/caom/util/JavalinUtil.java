@@ -56,10 +56,10 @@ public class JavalinUtil {
                     path("/products",() -> {
                         post("/", productController::createProductHandler);
                         put("/", productController::updateProductHandler);
-                        delete("/{id}", productController::deleteProductHandler);
-                        get("/{id}", productController::getProductByIdHandler);
+                        delete("/delete/{id}", productController::deleteProductHandler);
+                        get("/id/{id}", productController::getProductByIdHandler);
                         get("/", productController::getAllProductsHandler);
-                        get("/search", productController::searchProductsHandler);
+                        get("/search/", productController::searchProductsHandler);
                         get("/price", productController::getProductsByPriceRangeHandler);
                         get("/in-stock", productController::getProductsInStockHandler);
                         patch("/{id}/stock", productController::updateProductStockHandler);
@@ -83,11 +83,6 @@ public class JavalinUtil {
                     });
                 });
                 })
-//                .post("/users/register", ctx -> {userController.registerUserHandler(ctx);})
-                // Method Reference Syntax
-//                .post("/users/register", userController::registerUserHandler)
-//                .post("/users/login", userController::loginHandler)
-//                .get("/users", userController::getAllUsersHandler)
                 .start(port);
     }
 }

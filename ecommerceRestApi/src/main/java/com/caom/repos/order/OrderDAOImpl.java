@@ -1,14 +1,13 @@
 package com.caom.repos.order;
 
-import com.caom.models.Order;
-import com.caom.models.OrderItem;
-import com.caom.models.OrderStatus;
+import com.caom.models.*;
 import com.caom.util.ConnectionUtil;
 
 import java.sql.*;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -24,14 +23,30 @@ public class OrderDAOImpl implements OrderDAO {
 
     @Override
     public Order create(Order order) {
-        String sql = "INSERT INTO orders (user_id, total_price, status) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO orders (user_id, total_price, status) VALUES (?, ?, ?::order_status) RETURNING *;;";
 
-        try (PreparedStatement stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (Connection conn = ConnectionUtil.getConnection()){
+
+            PreparedStatement stmt = conn.prepareStatement(sql);
+
             stmt.setInt(1, order.getUserId());
             stmt.setDouble(2, order.getTotalPrice());
-            stmt.setString(3, order.getStatus().name());
+            stmt.setString(3, order.getStatus().name().toString());
 
-            int affectedRows = stmt.executeUpdate();
+            ResultSet rs = stmt.executeQuery();
+
+            if(rs.next()){
+                Order or = new Order();
+                or.setOrderId(rs.getInt("order_id"));
+                or.setUserId(rs.getInt("user_id"));
+                or.setTotalPrice(rs.getDouble("total_price"));
+                or.setTotalPrice(rs.getDouble("total_price"));
+                or.setStatus(OrderStatus.valueOf(rs.getString("status")));
+                System.out.println(or);
+                return or;
+            }
+
+            /*int affectedRows = stmt.executeUpdate();
 
             if (affectedRows == 0) {
                 throw new SQLException("Creating order failed, no rows affected.");
@@ -44,19 +59,22 @@ public class OrderDAOImpl implements OrderDAO {
                 } else {
                     throw new SQLException("Creating order failed, no ID obtained.");
                 }
-            }
-        } catch (SQLException e) {
+            }*/
+        } catch (Exception e) {
+            System.out.println("ERROR XXX");
             e.printStackTrace();
+            System.out.println(e.getMessage());
             System.out.println("ERROR FALTAL");
-            return null;
         }
+        return null;
     }
 
     @Override
     public Order getById(int orderId) {
         String sql = "SELECT * FROM orders WHERE order_id = ?";
+        Connection conn = ConnectionUtil.getConnection();
 
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, orderId);
 
             try (ResultSet rs = stmt.executeQuery()) {
@@ -65,9 +83,11 @@ public class OrderDAOImpl implements OrderDAO {
                 }
             }
         } catch (SQLException e) {
+            System.out.println("ERRROOORRR");
+            System.out.println(e.getMessage());
+            System.out.println("HPP");
             e.printStackTrace();
         }
-
         return null;
     }
 
@@ -95,14 +115,22 @@ public class OrderDAOImpl implements OrderDAO {
     public List<Order> getAllOrders() {
         List<Order> orders = new ArrayList<>();
         String sql = "SELECT * FROM orders ORDER BY created_at DESC";
+        try (Connection conn = ConnectionUtil.getConnection()){
 
-        try (Statement stmt = connection.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+            PreparedStatement stmt = conn.prepareStatement(sql);
 
+            ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
                 orders.add(mapResultSetToOrder(rs));
             }
-        } catch (SQLException e) {
+            /*try (Statement stmt = connection.createStatement();
+                 ResultSet rs = stmt.executeQuery(sql)) {
+
+
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }*/
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -247,10 +275,7 @@ public class OrderDAOImpl implements OrderDAO {
 
         // Convert SQL timestamp to ZonedDateTime
         Timestamp timestamp = rs.getTimestamp("created_at");
-        if (timestamp != null) {
-            ZonedDateTime zonedDateTime = timestamp.toInstant().atZone(ZoneId.systemDefault());
-            order.setCreatedAt(zonedDateTime);
-        }
+        order.setCreatedAt(timestamp);
 
         return order;
     }

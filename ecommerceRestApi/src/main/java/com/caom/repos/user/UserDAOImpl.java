@@ -1,5 +1,6 @@
 package com.caom.repos.user;
 
+import com.caom.models.Order;
 import com.caom.models.Role;
 import com.caom.models.User;
 import com.caom.util.ConnectionUtil;
@@ -113,6 +114,27 @@ public class UserDAOImpl implements UserDAO{
 
     @Override
     public User getById(int id) {
+        String sql = "SELECT * FROM users WHERE user_id = ?";
+        Connection conn = ConnectionUtil.getConnection();
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    User u = new User();
+                    u.setUserId(rs.getInt("user_id"));
+                    u.setFirstName(rs.getString("first_name"));
+                    u.setLastName(rs.getString("last_name"));
+                    u.setEmail(rs.getString("email"));
+                    u.setPassword(rs.getString("password"));
+                    u.setRole(Role.valueOf(rs.getString("role")));
+                    return u;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return null;
     }
 

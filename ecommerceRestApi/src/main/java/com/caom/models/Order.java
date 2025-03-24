@@ -1,7 +1,9 @@
 package com.caom.models;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.ZonedDateTime;
+import java.util.Date;
 import java.util.List;
 
 public class Order {
@@ -9,7 +11,7 @@ public class Order {
     private int userId;
     private double totalPrice;
     private OrderStatus status;
-    private ZonedDateTime createdAt;
+    private Timestamp createdAt;
     private List<OrderItem> orderItems;
 
     // Constructors
@@ -56,11 +58,11 @@ public class Order {
         this.status = status;
     }
 
-    public ZonedDateTime getCreatedAt() {
+    public Timestamp getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(ZonedDateTime createdAt) {
+    public void setCreatedAt(Timestamp createdAt) {
         this.createdAt = createdAt;
     }
 
