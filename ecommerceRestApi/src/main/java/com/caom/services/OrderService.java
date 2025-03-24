@@ -47,34 +47,27 @@ public class OrderService {
                         ", Requested: " + item.getQuantity());
             }
 
-            // Calculate price for this item (use product's current price)
             double itemPrice = product.getPrice() * item.getQuantity();
             totalPrice = totalPrice + itemPrice;
 
-            // Set the price in the order item
             item.setPrice(product.getPrice());
 
-            // Reduce stock
             product.setStock(product.getStock() - item.getQuantity());
             productDAO.update(product);
         }
 
-        // Create the order
         Order order = new Order();
         order.setUserId(userId);
         order.setTotalPrice(totalPrice);
         order.setStatus(OrderStatus.PENDING);
 
-        // Save the order to get the ID
         Order savedOrder = orderDAO.create(order);
 
-        // Set the order ID for each item and save them
         for (OrderItem item : orderItems) {
             item.setOrderId(savedOrder.getOrderId());
             orderDAO.addOrderItem(item);
         }
 
-        // Get the complete order with items
         return getOrderById(savedOrder.getOrderId());
     }
 

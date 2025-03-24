@@ -77,6 +77,7 @@ public class OrderController {
             logger.error("Error creating order: ", e);
             ctx.status(500);
             ctx.json(new ErrorMessage("An error occurred while creating the order: " + e.getMessage()));
+            e.printStackTrace();
         }
     }
 

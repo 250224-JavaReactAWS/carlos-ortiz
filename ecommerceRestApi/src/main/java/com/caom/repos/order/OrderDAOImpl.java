@@ -47,6 +47,7 @@ public class OrderDAOImpl implements OrderDAO {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+            System.out.println("ERROR FALTAL");
             return null;
         }
     }

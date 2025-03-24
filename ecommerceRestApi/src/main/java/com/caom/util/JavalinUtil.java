@@ -1,15 +1,19 @@
 package com.caom.util;
 
 import com.caom.controllers.CartController;
+import com.caom.controllers.OrderController;
 import com.caom.controllers.ProductController;
 import com.caom.controllers.UserController;
 import com.caom.repos.cart.CartDAO;
 import com.caom.repos.cart.CartDAOImpl;
+import com.caom.repos.order.OrderDAO;
+import com.caom.repos.order.OrderDAOImpl;
 import com.caom.repos.product.ProductDAO;
 import com.caom.repos.product.ProductDAOImpl;
 import com.caom.repos.user.UserDAO;
 import com.caom.repos.user.UserDAOImpl;
 import com.caom.services.CartService;
+import com.caom.services.OrderService;
 import com.caom.services.ProductService;
 import com.caom.services.UserService;
 import io.javalin.Javalin;
@@ -35,6 +39,10 @@ public class JavalinUtil {
         CartDAO cartDAO = new CartDAOImpl();
         CartService cartService = new CartService(cartDAO, productDAO);
         CartController cartController = new CartController(cartService, productService);
+
+        OrderDAO orderDAO = new OrderDAOImpl();
+        OrderService orderService = new OrderService(orderDAO, productDAO);
+        OrderController orderController = new OrderController(orderService, userService);
 
         return Javalin.create(config -> {
                 config.router.apiBuilder(() -> {
@@ -63,6 +71,15 @@ public class JavalinUtil {
                         delete("/{id}", cartController::removeFromCartHandler);
                         delete("/", cartController::clearCartHandler);
                         get("/validate", cartController::validateCartStockHandler);
+                    });
+                    path("/orders",() -> {
+                        post("/", orderController::createOrderHandler);
+                        get("/", orderController::getAllOrdersHandler);
+                        get("/me", orderController::getUserOrdersHandler);
+                        get("/{id}", orderController::getOrderByIdHandler);
+                        put("/{id}/status", orderController::updateOrderStatusHandler);
+                        post("/{id}/cancel", orderController::cancelOrderHandler);
+                        delete("/{id}", orderController::deleteOrderHandler);
                     });
                 });
                 })
